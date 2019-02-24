@@ -1,0 +1,11 @@
+[package]
+name = "chessboard"
+version = "0.0.1"
+authors = ["Mathias Magnusson <mathiasmagnussons@gmail.com>"]
+edition = "2018"
+description = "A Chess Game Engine Written In Rust"
+license = "MIT"
+keywords = ["chess"]
+repository = "https://github.com/mathiasmagnusson/chessboard-rs"
+
+[dependencies]
