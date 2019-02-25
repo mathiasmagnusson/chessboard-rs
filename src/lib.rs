@@ -5,7 +5,8 @@ use std::fmt;
 use std::io;
 
 pub struct Board {
-    tiles: [Piece; 8 * 8],
+    /// Saved using the 0x88 method
+    tiles: [Piece; 128],
     next_move: Color,
     castling_availablity: CastlingAvailability,
     en_passant_target_square: Option<Square>,
@@ -47,19 +48,32 @@ pub struct CastlingAvailability {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Square(u8);
 
+impl Square {
+    pub fn new(file: u8, rank: u8) -> Self {
+        assert!(file < 8);
+        assert!(rank < 8);
+
+        Self(0b00000000 | file | rank << 4)
+    }
+    pub fn as_u8(&self) -> u8 {
+        self.0
+    }
+}
+
 impl Default for Board {
     #[rustfmt::skip]
     fn default() -> Self {
         Self {
-            tiles: [
-                Piece::BRook, Piece::BKnight, Piece::BBishop, Piece::BQueen, Piece::BKing, Piece::BBishop, Piece::BKnight, Piece::BRook,
-                Piece::BPawn, Piece::BPawn  , Piece::BPawn  , Piece::BPawn , Piece::BPawn, Piece::BPawn  , Piece::BPawn  , Piece::BPawn,
-                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
-                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
-                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
-                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
-                Piece::WPawn, Piece::WPawn  , Piece::WPawn  , Piece::WPawn , Piece::WPawn, Piece::WPawn  , Piece::WPawn  , Piece::WPawn,
-                Piece::WRook, Piece::WKnight, Piece::WBishop, Piece::WQueen, Piece::WKing, Piece::WBishop, Piece::WKnight, Piece::WRook,
+            tiles: [                                                                                                                     // This is 'the right board' it doesn't exist and only exists as a filler (0x88)
+                Piece::BRook, Piece::BKnight, Piece::BBishop, Piece::BQueen, Piece::BKing, Piece::BBishop, Piece::BKnight, Piece::BRook, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+                Piece::BPawn, Piece::BPawn  , Piece::BPawn  , Piece::BPawn , Piece::BPawn, Piece::BPawn  , Piece::BPawn  , Piece::BPawn, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None , Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None , Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None , Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None , Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+                Piece::WPawn, Piece::WPawn  , Piece::WPawn  , Piece::WPawn , Piece::WPawn, Piece::WPawn  , Piece::WPawn  , Piece::WPawn, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+                Piece::WRook, Piece::WKnight, Piece::WBishop, Piece::WQueen, Piece::WKing, Piece::WBishop, Piece::WKnight, Piece::WRook, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
+
             ],
             next_move: Color::White,
             castling_availablity: Default::default(),
@@ -97,13 +111,15 @@ impl TryFrom<&str> for Board {
 
         let mut fen = fen.split(' ');
 
-        let mut tiles = [Piece::None; 8 * 8];
+        let mut tiles = [Piece::None; 128];
         let mut i = 0;
         for c in fen.next().unwrap().chars().filter(|c| *c != '/') {
             match c {
                 c @ '1'...'8' => i += ((c as u8) - b'0') as usize,
                 c => {
-                    tiles[i] = Piece::try_from(c)?;
+                    let file = (i % 8) as u8;
+                    let rank = (i / 8) as u8;
+                    tiles[Square::new(file, rank).as_u8() as usize] = Piece::try_from(c)?;
                     i += 1;
                 }
             }
@@ -233,17 +249,17 @@ impl TryFrom<&str> for Square {
             _ => return err(s),
         };
 
-        Ok(Square(rank * 8 + file))
+        Ok(Square::new(file, rank))
     }
 }
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for (i, p) in self.tiles.iter().enumerate() {
-            write!(f, "{}", p)?;
-            if i % 8 == 7 {
-                write!(f, "\n")?;
+        for rank in 0..8 {
+            for file in 0..8 {
+                write!(f, "{} ", self.tiles[Square::new(file, rank).as_u8() as usize])?;
             }
+            writeln!(f)?;
         }
         Ok(())
     }
@@ -301,12 +317,22 @@ mod tests {
     }
 
     #[test]
+    fn square_shit_is_correct() {
+        let rank = 0b010;
+        let file = 0b101;
+
+        let square = Square::new(file, rank);
+
+        assert_eq!(square.as_u8(), 0b_0010_0101);
+    }
+
+    #[test]
     fn pen_notation_starting_position_gives_the_same_result_as_default_implementation() {
         let pen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         let pen_board = Board::try_from(pen).unwrap();
         let def_board = Board::default();
 
-        assert_eq!(format!("{}", pen_board), format!("{}", def_board));
+        assert_eq!(format!("{}", pen_board), format!("{}", def_board), "\n{}\n", pen_board);
     }
 }
