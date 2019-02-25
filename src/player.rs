@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Color {
+pub enum Player {
     White,
     Black,
 }

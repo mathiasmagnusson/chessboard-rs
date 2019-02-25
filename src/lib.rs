@@ -2,13 +2,13 @@
 
 mod board;
 mod castling_availability;
-mod color;
+mod player;
 mod piece;
 mod square;
 
 pub use board::Board;
 pub use castling_availability::CastlingAvailability;
-pub use color::Color;
+pub use player::Player;
 pub use piece::Piece;
 pub use square::Square;
 

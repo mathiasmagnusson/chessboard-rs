@@ -1,5 +1,5 @@
 use crate::CastlingAvailability;
-use crate::Color;
+use crate::Player;
 use crate::Piece;
 use crate::Square;
 
@@ -10,7 +10,7 @@ use std::io;
 pub struct Board {
 	/// Saved using the 0x88 method
 	tiles: [Piece; 128],
-	next_move: Color,
+	next_move: Player,
 	castling_availablity: CastlingAvailability,
 	en_passant_target_square: Option<Square>,
 	halfmove_clock: u64,
@@ -32,7 +32,7 @@ impl Default for Board {
                 Piece::WRook, Piece::WKnight, Piece::WBishop, Piece::WQueen, Piece::WKing, Piece::WBishop, Piece::WKnight, Piece::WRook, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None, Piece::None,
 
             ],
-            next_move: Color::White,
+            next_move: Player::White,
             castling_availablity: Default::default(),
             en_passant_target_square: None,
             halfmove_clock: 0,
@@ -72,8 +72,8 @@ impl TryFrom<&str> for Board {
 		}
 
 		let next_move = match fen.next().unwrap() {
-			"w" => Color::White,
-			"b" => Color::Black,
+			"w" => Player::White,
+			"b" => Player::Black,
 			_ => return err(),
 		};
 
