@@ -212,39 +212,25 @@ impl TryFrom<&str> for CastlingAvailability {
 impl TryFrom<&str> for Square {
     type Error = io::Error;
     fn try_from(s: &str) -> Result<Square, io::Error> {
-        fn err() -> Result<Square, io::Error> {
+        fn err(s: &str) -> Result<Square, io::Error> {
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "{} is not a valid square. Valid ones are a letter 'a' through 'h' followed by a number 1 to 8, ex: c6",
+                format!("'{}' is not a valid square. Valid ones are a letter 'a' through 'h' followed by a number 1 to 8, ex: c6", s),
             ))
         }
 
-        if s.len() != 2 {
-            return err();
+        if s.bytes().len() != 2 {
+            return err(s);
         }
 
-        let file = match s.chars().next().unwrap() {
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-            _ => return err(),
+        let file = match s.bytes().next().unwrap() {
+            c @ b'a' ... b'h' => c - b'a',
+            _ => return err(s),
         };
 
-        let rank = match s.chars().nth(2).unwrap() {
-            '1' => 0,
-            '2' => 1,
-            '3' => 2,
-            '4' => 3,
-            '5' => 4,
-            '6' => 5,
-            '7' => 6,
-            '8' => 7,
-            _ => return err(),
+        let rank = match s.bytes().nth(2).unwrap() {
+            c @ b'1' ... b'h' => c - b'1',
+            _ => return err(s),
         };
 
         Ok(Square(rank * 8 + file))
