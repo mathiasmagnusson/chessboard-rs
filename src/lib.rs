@@ -1,16 +1,16 @@
 #![feature(try_from)]
 
 mod board;
-mod castling_availability;
-mod player;
 mod piece;
+mod player;
 mod square;
 
 pub use board::Board;
-pub use castling_availability::CastlingAvailability;
-pub use player::Player;
 pub use piece::Piece;
+pub use player::Player;
 pub use square::Square;
+
+pub mod castling;
 
 #[cfg(test)]
 mod tests {

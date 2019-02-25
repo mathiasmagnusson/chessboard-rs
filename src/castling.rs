@@ -1,15 +1,37 @@
+use crate::Player;
+
 use std::convert::TryFrom;
 use std::io;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct CastlingAvailability {
+pub struct Availability {
     black_kingside: bool,
     black_queenside: bool,
     white_kingside: bool,
     white_queenside: bool,
 }
 
-impl Default for CastlingAvailability {
+pub enum Side {
+    KingSide,
+    QueenSide,
+}
+
+pub trait CanCastle {
+    fn can_castle(&self, player: Player, side: Side) -> bool;
+}
+
+impl CanCastle for Availability {
+    fn can_castle(&self, player: Player, side: Side) -> bool {
+        match (player, side) {
+            (Player::White, Side::KingSide)  => self.white_kingside,
+            (Player::White, Side::QueenSide) => self.white_queenside,
+            (Player::Black, Side::KingSide)  => self.black_kingside,
+            (Player::Black, Side::QueenSide) => self.black_queenside,
+        }
+    }
+}
+
+impl Default for Availability {
     fn default() -> Self {
         Self {
             black_kingside: true,
@@ -20,10 +42,10 @@ impl Default for CastlingAvailability {
     }
 }
 
-impl TryFrom<&str> for CastlingAvailability {
+impl TryFrom<&str> for Availability {
     type Error = io::Error;
-    fn try_from(s: &str) -> Result<CastlingAvailability, io::Error> {
-        fn err(s: &str) -> Result<CastlingAvailability, io::Error> {
+    fn try_from(s: &str) -> Result<Availability, io::Error> {
+        fn err(s: &str) -> Result<Availability, io::Error> {
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
@@ -37,7 +59,7 @@ impl TryFrom<&str> for CastlingAvailability {
             return err(s);
         }
 
-        let mut ret = CastlingAvailability {
+        let mut ret = Availability {
             black_kingside: false,
             black_queenside: false,
             white_kingside: false,

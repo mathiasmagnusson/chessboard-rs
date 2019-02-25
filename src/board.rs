@@ -1,4 +1,4 @@
-use crate::CastlingAvailability;
+use crate::castling;
 use crate::Player;
 use crate::Piece;
 use crate::Square;
@@ -11,7 +11,7 @@ pub struct Board {
 	/// Saved using the 0x88 method
 	tiles: [Piece; 128],
 	next_move: Player,
-	castling_availablity: CastlingAvailability,
+	castling_availablity: castling::Availability,
 	en_passant_target_square: Option<Square>,
 	halfmove_clock: u64,
 	fullmove_number: u64,
@@ -77,7 +77,7 @@ impl TryFrom<&str> for Board {
 			_ => return err(),
 		};
 
-		let castling_availablity = CastlingAvailability::try_from(fen.next().unwrap())?;
+		let castling_availablity = castling::Availability::try_from(fen.next().unwrap())?;
 
 		let en_passant_target_square = match fen.next().unwrap() {
 			"-" => None,
