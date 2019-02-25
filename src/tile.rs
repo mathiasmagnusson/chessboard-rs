@@ -32,7 +32,7 @@ impl TryFrom<&str> for Tile {
             _ => return err(s),
         };
 
-        let rank = match s.bytes().nth(2).unwrap() {
+        let rank = match s.bytes().nth(1).unwrap() {
             c @ b'1' ... b'8' => Rank::from(c - b'1'),
             _ => return err(s),
         };
