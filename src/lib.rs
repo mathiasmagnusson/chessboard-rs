@@ -398,6 +398,6 @@ mod tests {
         let pen_board = Board::try_from(pen).unwrap();
         let def_board = Board::default();
 
-        assert!(pen_board == def_board);
+        assert_eq!(format!("{}", pen_board), format!("{}", def_board));
     }
 }
