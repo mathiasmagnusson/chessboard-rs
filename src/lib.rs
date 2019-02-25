@@ -5,7 +5,7 @@ use std::fmt;
 use std::io;
 
 pub struct Board {
-    tiles: [Option<Piece>; 8 * 8],
+    tiles: [Piece; 8 * 8],
     next_move: Color,
     castling_availablity: CastlingAvailability,
     en_passant_target_square: Option<Square>,
@@ -14,19 +14,20 @@ pub struct Board {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Piece {
-    t: PieceType,
-    c: Color,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum PieceType {
-    Pawn,
-    Bishop,
-    Knight,
-    Rook,
-    Queen,
-    King,
+pub enum Piece {
+    None = 0,
+    WPawn = 1,
+    BPawn = -1,
+    WBishop = 2,
+    BBishop = -2,
+    WKnight = 3,
+    BKnight = -3,
+    WRook = 4,
+    BRook = -4,
+    WQueen = 5,
+    BQueen = -5,
+    WKing = 6,
+    BKing = -6,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -51,14 +52,14 @@ impl Default for Board {
     fn default() -> Self {
         Self {
             tiles: [
-                Some(Piece { t: PieceType::Rook, c: Color::Black, }), Some(Piece { t: PieceType::Knight, c: Color::Black, }), Some(Piece { t: PieceType::Bishop, c: Color::Black, }), Some(Piece { t: PieceType::Queen, c: Color::Black, }), Some(Piece { t: PieceType::King, c: Color::Black, }), Some(Piece { t: PieceType::Bishop, c: Color::Black, }), Some(Piece { t: PieceType::Knight, c: Color::Black, }), Some(Piece { t: PieceType::Rook, c: Color::Black, }),
-                Some(Piece { t: PieceType::Pawn, c: Color::Black, }), Some(Piece { t: PieceType::Pawn  , c: Color::Black, }), Some(Piece { t: PieceType::Pawn  , c: Color::Black, }), Some(Piece { t: PieceType::Pawn , c: Color::Black, }), Some(Piece { t: PieceType::Pawn, c: Color::Black, }), Some(Piece { t: PieceType::Pawn  , c: Color::Black, }), Some(Piece { t: PieceType::Pawn  , c: Color::Black, }), Some(Piece { t: PieceType::Pawn, c: Color::Black, }),
-                None,                                                 None,                                                   None,                                                   None,                                                  None,                                                 None,                                                   None,                                                   None,
-                None,                                                 None,                                                   None,                                                   None,                                                  None,                                                 None,                                                   None,                                                   None,
-                None,                                                 None,                                                   None,                                                   None,                                                  None,                                                 None,                                                   None,                                                   None,
-                None,                                                 None,                                                   None,                                                   None,                                                  None,                                                 None,                                                   None,                                                   None,
-                Some(Piece { t: PieceType::Pawn, c: Color::White, }), Some(Piece { t: PieceType::Pawn  , c: Color::White, }), Some(Piece { t: PieceType::Pawn  , c: Color::White, }), Some(Piece { t: PieceType::Pawn , c: Color::White, }), Some(Piece { t: PieceType::Pawn, c: Color::White, }), Some(Piece { t: PieceType::Pawn  , c: Color::White, }), Some(Piece { t: PieceType::Pawn  , c: Color::White, }), Some(Piece { t: PieceType::Pawn, c: Color::White, }),
-                Some(Piece { t: PieceType::Rook, c: Color::White, }), Some(Piece { t: PieceType::Knight, c: Color::White, }), Some(Piece { t: PieceType::Bishop, c: Color::White, }), Some(Piece { t: PieceType::Queen, c: Color::White, }), Some(Piece { t: PieceType::King, c: Color::White, }), Some(Piece { t: PieceType::Bishop, c: Color::White, }), Some(Piece { t: PieceType::Knight, c: Color::White, }), Some(Piece { t: PieceType::Rook, c: Color::White, }),
+                Piece::BRook, Piece::BKnight, Piece::BBishop, Piece::BQueen, Piece::BKing, Piece::BBishop, Piece::BKnight, Piece::BRook,
+                Piece::BPawn, Piece::BPawn  , Piece::BPawn  , Piece::BPawn , Piece::BPawn, Piece::BPawn  , Piece::BPawn  , Piece::BPawn,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
+                Piece::None , Piece::None   , Piece::None   , Piece::None  , Piece::None , Piece::None   , Piece::None   , Piece::None ,
+                Piece::WPawn, Piece::WPawn  , Piece::WPawn  , Piece::WPawn , Piece::WPawn, Piece::WPawn  , Piece::WPawn  , Piece::WPawn,
+                Piece::WRook, Piece::WKnight, Piece::WBishop, Piece::WQueen, Piece::WKing, Piece::WBishop, Piece::WKnight, Piece::WRook,
             ],
             next_move: Color::White,
             castling_availablity: Default::default(),
@@ -96,13 +97,13 @@ impl TryFrom<&str> for Board {
 
         let mut fen = fen.split(' ');
 
-        let mut tiles = [None; 8 * 8];
+        let mut tiles = [Piece::None; 8 * 8];
         let mut i = 0;
         for c in fen.next().unwrap().chars().filter(|c| *c != '/') {
             match c {
                 c @ '1'...'8' => i += ((c as u8) - b'0') as usize,
                 c => {
-                    tiles[i] = Some(Piece::try_from(c)?);
+                    tiles[i] = Piece::try_from(c)?;
                     i += 1;
                 }
             }
@@ -146,54 +147,18 @@ impl TryFrom<char> for Piece {
     type Error = io::Error;
     fn try_from(c: char) -> Result<Piece, io::Error> {
         match c {
-            'p' => Ok(Piece {
-                t: PieceType::Pawn,
-                c: Color::Black,
-            }),
-            'b' => Ok(Piece {
-                t: PieceType::Bishop,
-                c: Color::Black,
-            }),
-            'n' => Ok(Piece {
-                t: PieceType::Knight,
-                c: Color::Black,
-            }),
-            'r' => Ok(Piece {
-                t: PieceType::Rook,
-                c: Color::Black,
-            }),
-            'q' => Ok(Piece {
-                t: PieceType::Queen,
-                c: Color::Black,
-            }),
-            'k' => Ok(Piece {
-                t: PieceType::King,
-                c: Color::Black,
-            }),
-            'P' => Ok(Piece {
-                t: PieceType::Pawn,
-                c: Color::White,
-            }),
-            'B' => Ok(Piece {
-                t: PieceType::Bishop,
-                c: Color::White,
-            }),
-            'N' => Ok(Piece {
-                t: PieceType::Knight,
-                c: Color::White,
-            }),
-            'R' => Ok(Piece {
-                t: PieceType::Rook,
-                c: Color::White,
-            }),
-            'Q' => Ok(Piece {
-                t: PieceType::Queen,
-                c: Color::White,
-            }),
-            'K' => Ok(Piece {
-                t: PieceType::King,
-                c: Color::White,
-            }),
+            'p' => Ok(Piece::BPawn),
+            'b' => Ok(Piece::BBishop),
+            'n' => Ok(Piece::BKnight),
+            'r' => Ok(Piece::BRook),
+            'q' => Ok(Piece::BQueen),
+            'k' => Ok(Piece::BKing),
+            'P' => Ok(Piece::WPawn),
+            'B' => Ok(Piece::WBishop),
+            'N' => Ok(Piece::WKnight),
+            'R' => Ok(Piece::WRook),
+            'Q' => Ok(Piece::WQueen),
+            'K' => Ok(Piece::WKing),
             _ => Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "m8, das not gododod (TODO: change this error message)",
@@ -289,14 +254,7 @@ impl TryFrom<&str> for Square {
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for (i, p) in self.tiles.iter().enumerate() {
-            write!(
-                f,
-                "{}",
-                match p {
-                    Some(p) => format!("{}", p),
-                    None => "◦".into(),
-                }
-            )?;
+            write!(f, "{}", p)?;
             if i % 8 == 7 {
                 write!(f, "\n")?;
             }
@@ -311,54 +269,19 @@ impl fmt::Display for Piece {
             f,
             "{}",
             match *self {
-                Piece {
-                    t: PieceType::Pawn,
-                    c: Color::Black,
-                } => 'p',
-                Piece {
-                    t: PieceType::Bishop,
-                    c: Color::Black,
-                } => 'b',
-                Piece {
-                    t: PieceType::Knight,
-                    c: Color::Black,
-                } => 'n',
-                Piece {
-                    t: PieceType::Rook,
-                    c: Color::Black,
-                } => 'r',
-                Piece {
-                    t: PieceType::Queen,
-                    c: Color::Black,
-                } => 'q',
-                Piece {
-                    t: PieceType::King,
-                    c: Color::Black,
-                } => 'k',
-                Piece {
-                    t: PieceType::Pawn,
-                    c: Color::White,
-                } => 'P',
-                Piece {
-                    t: PieceType::Bishop,
-                    c: Color::White,
-                } => 'B',
-                Piece {
-                    t: PieceType::Knight,
-                    c: Color::White,
-                } => 'N',
-                Piece {
-                    t: PieceType::Rook,
-                    c: Color::White,
-                } => 'R',
-                Piece {
-                    t: PieceType::Queen,
-                    c: Color::White,
-                } => 'Q',
-                Piece {
-                    t: PieceType::King,
-                    c: Color::White,
-                } => 'K',
+                Piece::BPawn => 'p',
+                Piece::BBishop => 'b',
+                Piece::BKnight => 'n',
+                Piece::BRook => 'r',
+                Piece::BQueen => 'q',
+                Piece::BKing => 'k',
+                Piece::WPawn => 'P',
+                Piece::WBishop => 'B',
+                Piece::WKnight => 'N',
+                Piece::WRook => 'R',
+                Piece::WQueen => 'Q',
+                Piece::WKing => 'K',
+                Piece::None => '*',
             }
         )?;
 
