@@ -1,8 +1,10 @@
 use crate::castling;
-use crate::Player;
+use crate::Move;
 use crate::Piece;
 use crate::Player;
 use crate::Tile;
+use crate::File;
+use crate::Rank;
 
 use std::convert::TryFrom;
 use std::fmt;
@@ -16,6 +18,19 @@ pub struct Board {
     en_passant_target_square: Option<Tile>,
     halfmove_clock: u64,
     fullmove_number: u64,
+}
+
+impl Board {
+    pub fn is_move_legal(&self, m: Move) -> Result<bool, io::Error> {
+        match m {
+            Move::Move { from, dest } => {
+                
+            },
+            Move::Castling(b) => {},
+        }
+
+        Ok(true)
+    }
 }
 
 impl Default for Board {
@@ -64,8 +79,8 @@ impl TryFrom<&str> for Board {
             match c {
                 c @ '1'...'8' => i += ((c as u8) - b'0') as usize,
                 c => {
-                    let file = (i % 8) as u8;
-                    let rank = (i / 8) as u8;
+                    let file = File::from((i % 8) as u8);
+                    let rank = Rank::from((i / 8) as u8);
                     tiles[Tile::new(file, rank).as_u8() as usize] = Piece::try_from(c)?;
                     i += 1;
                 }
@@ -110,7 +125,7 @@ impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for rank in 0..8 {
             for file in 0..8 {
-                write!(f, "{} ", self.tiles[Tile::new(file, rank).as_u8() as usize])?;
+                write!(f, "{} ", self.tiles[Tile::new(File::from(file), Rank::from(rank)).as_u8() as usize])?;
             }
             writeln!(f)?;
         }

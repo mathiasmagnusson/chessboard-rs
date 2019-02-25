@@ -1,6 +1,7 @@
 #![feature(try_from)]
 
 mod board;
+mod r#move;
 mod piece;
 mod player;
 mod tile;
@@ -8,6 +9,9 @@ mod tile;
 pub use board::Board;
 pub use piece::Piece;
 pub use player::Player;
+pub use r#move::Move;
+pub use tile::File;
+pub use tile::Rank;
 pub use tile::Tile;
 
 pub mod castling;
@@ -18,13 +22,13 @@ mod tests {
     use std::convert::TryFrom;
 
     #[test]
-    fn square_shit_is_correct() {
-        let rank = 0b010;
-        let file = 0b101;
+    fn tile_shit_is_correct() {
+        //                   0b_0101  0b_0010
+        let tile1 = Tile::new(File::F, Rank::Three).as_u8();
+        let tile2 = Tile::try_from("f3").unwrap().as_u8();
 
-        let square = Tile::new(file, rank);
-
-        assert_eq!(square.as_u8(), 0b_0010_0101);
+        assert_eq!(tile1, 0b_0010_0101);
+        assert_eq!(tile1, tile2);
     }
 
     #[test]

@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 use std::io;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Tile(u8);
 
 impl Tile {
