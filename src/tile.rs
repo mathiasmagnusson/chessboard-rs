@@ -5,11 +5,8 @@ use std::io;
 pub struct Tile(u8);
 
 impl Tile {
-    pub fn new(file: u8, rank: u8) -> Self {
-        assert!(file < 8);
-        assert!(rank < 8);
-
-        Self(0b00000000 | file | rank << 4)
+    pub fn new(file: File, rank: Rank) -> Self {
+        Self(0b00000000 | file as u8 | (rank as u8) << 4)
     }
     pub fn as_u8(&self) -> u8 {
         self.0
@@ -31,15 +28,75 @@ impl TryFrom<&str> for Tile {
         }
 
         let file = match s.bytes().next().unwrap() {
-            c @ b'a'...b'h' => c - b'a',
+            c @ b'a' ... b'h' => File::from(c - b'a'),
             _ => return err(s),
         };
 
         let rank = match s.bytes().nth(2).unwrap() {
-            c @ b'1'...b'h' => c - b'1',
+            c @ b'1' ... b'8' => Rank::from(c - b'1'),
             _ => return err(s),
         };
 
         Ok(Tile::new(file, rank))
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum Rank {
+    One = 0,
+    Two = 1,
+    Three = 2,
+    Four = 3,
+    Five = 4,
+    Six = 5,
+    Seven = 6,
+    Eight = 7,
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum File {
+    A = 0,
+    B = 1,
+    C = 2,
+    D = 3,
+    E = 4,
+    F = 5,
+    G = 6,
+    H = 7,
+}
+
+impl From<u8> for Rank {
+    fn from(n: u8) -> Self {
+        match n {
+            n @ 0 ... 7 => unsafe { std::mem::transmute(n) },
+            // 0 => Rank::One,
+            // 1 => Rank::Two,
+            // 2 => Rank::Three,
+            // 3 => Rank::Four,
+            // 4 => Rank::Five,
+            // 5 => Rank::Six,
+            // 6 => Rank::Seven,
+            // 7 => Rank::Eight,
+            _ => panic!("A rank conversion must be between 0 and 7, inclusive"),
+        }
+    }
+}
+
+impl From<u8> for File {
+    fn from(n: u8) -> Self {
+        match n {
+            n @ 0 ... 7 => unsafe { std::mem::transmute(n) },
+            // 0 => File::A
+            // 1 => File::B
+            // 2 => File::C
+            // 3 => File::D
+            // 4 => File::E
+            // 5 => File::F
+            // 6 => File::G
+            // 7 => File::H
+            _ => panic!("A file conversion must be between 0 and 7, inclusive"),
+        }
     }
 }
