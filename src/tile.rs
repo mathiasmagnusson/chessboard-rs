@@ -2,9 +2,9 @@ use std::convert::TryFrom;
 use std::io;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Square(u8);
+pub struct Tile(u8);
 
-impl Square {
+impl Tile {
     pub fn new(file: u8, rank: u8) -> Self {
         assert!(file < 8);
         assert!(rank < 8);
@@ -16,10 +16,10 @@ impl Square {
     }
 }
 
-impl TryFrom<&str> for Square {
+impl TryFrom<&str> for Tile {
     type Error = io::Error;
-    fn try_from(s: &str) -> Result<Square, io::Error> {
-        fn err(s: &str) -> Result<Square, io::Error> {
+    fn try_from(s: &str) -> Result<Tile, io::Error> {
+        fn err(s: &str) -> Result<Tile, io::Error> {
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!("'{}' is not a valid square. Valid ones are a letter 'a' through 'h' followed by a number 1 to 8, ex: c6", s),
@@ -40,6 +40,6 @@ impl TryFrom<&str> for Square {
             _ => return err(s),
         };
 
-        Ok(Square::new(file, rank))
+        Ok(Tile::new(file, rank))
     }
 }

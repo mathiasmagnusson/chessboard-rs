@@ -3,12 +3,12 @@
 mod board;
 mod piece;
 mod player;
-mod square;
+mod tile;
 
 pub use board::Board;
 pub use piece::Piece;
 pub use player::Player;
-pub use square::Square;
+pub use tile::Tile;
 
 pub mod castling;
 
@@ -22,7 +22,7 @@ mod tests {
         let rank = 0b010;
         let file = 0b101;
 
-        let square = Square::new(file, rank);
+        let square = Tile::new(file, rank);
 
         assert_eq!(square.as_u8(), 0b_0010_0101);
     }
