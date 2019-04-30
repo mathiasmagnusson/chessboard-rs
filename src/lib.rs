@@ -1,5 +1,3 @@
-#![feature(try_from)]
-
 mod board;
 mod r#move;
 mod piece;
